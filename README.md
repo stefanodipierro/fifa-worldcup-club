@@ -27,11 +27,22 @@ writes the results to the `data/out/` directory. To execute the script from the
 shell use:
 
 ```bash
-Rscript cwc_pull.R
+Rscript scripts/cwc_pull.R
 ```
 
-By default the generated data will be saved under `data/out/cwc_squads.csv`. You can
-adapt the script to change file names or add further transformations as needed.
+By default the generated data will be saved as an RDS file named with the
+timestamp of execution, for example `data/out/20240101_120000_big_df.rds`. You
+can adapt the script to change file names or add further transformations as
+needed.
+
+The script expects a `teams.csv` file inside the `data/` folder with at least
+the following columns:
+
+```csv
+team,country
+Palmeiras,Brazil
+Porto,Portugal
+```
 
 ## Aggiornamento automatico
 
