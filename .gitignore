@@ -1,0 +1,6 @@
+# History files
+*.Rhistory
+
+# RStudio project files
+*.Rproj
+.Rproj.user/
