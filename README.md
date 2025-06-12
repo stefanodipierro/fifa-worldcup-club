@@ -33,6 +33,7 @@ You can install the required packages from the R console with:
 
 ```r
 install.packages("remotes")
+# use the development version for the season_end_year argument
 remotes::install_github("JaseZiv/worldfootballR")
 install.packages(c("dplyr", "purrr", "readr"))
 ```
