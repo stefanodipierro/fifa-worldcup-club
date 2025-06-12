@@ -61,6 +61,25 @@ Porto,Portugal,Primeira Liga
 
 The `league_code` value is used to build the FBref URL for each team.
 
+## Exploratory data analysis
+
+After collecting the raw data you can produce a few summary charts using the
+`eda.R` script:
+
+```bash
+Rscript scripts/eda.R
+```
+
+The script loads the most recent RDS file in `data/out/` and writes results to
+the `analysis/` directory. The following charts are generated:
+
+- `goals_by_team.png` &ndash; total goals scored by each team.
+- `possession_by_team.png` &ndash; average possession percentage per team.
+- `disciplinary_by_team.png` &ndash; yellow/red cards or other disciplinary
+  figures.
+
+Each plot is saved alongside a CSV file containing the aggregated numbers.
+
 ## Aggiornamento automatico
 
 Per programmare l'esecuzione periodica di `cwc_pull.R` si può utilizzare
