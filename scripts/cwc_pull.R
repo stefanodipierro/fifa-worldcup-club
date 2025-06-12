@@ -67,13 +67,44 @@ get_team_url <- function(team, country = NA, league_code = NA) {
 
 #' Get Transfermarkt team URL from team name by scraping the search page
 #' @param team team name as string
-get_tm_team_url <- function(team) {
+get_tm_team_url <- function(team, country = NA, league = NA) {
   search_url <- paste0(
     "https://www.transfermarkt.com/schnellsuche/ergebnis/schnellsuche?query=",
     utils::URLencode(team)
   )
   page <- tryCatch(rvest::read_html(search_url), error = function(e) NULL)
   if (is.null(page)) return(NA_character_)
+
+  rows <- rvest::html_elements(page, "div.responsive-table table.items tbody tr")
+  if (length(rows) > 0) {
+    df <- dplyr::tibble(
+      name = rvest::html_text(rvest::html_element(rows, "td.hauptlink a")),
+      url = rvest::html_attr(rvest::html_element(rows, "td.hauptlink a"), "href"),
+      country = rvest::html_attr(rvest::html_element(rows, "td.zentriert img.flaggenrahmen"), "title"),
+      league = rvest::html_text(rvest::html_element(rows, "td.inline-table tr:nth-child(2) a"))
+    ) %>%
+      dplyr::mutate(
+        name = stringr::str_squish(name),
+        country = stringr::str_squish(country),
+        league = stringr::str_squish(league)
+      ) %>%
+      dplyr::filter(stringr::str_detect(name, stringr::fixed(team, ignore_case = TRUE)))
+
+    if (!is.na(country)) {
+      df <- df %>% dplyr::filter(stringr::str_detect(country, stringr::fixed(country, ignore_case = TRUE)))
+    }
+    if (!is.na(league)) {
+      df <- df %>% dplyr::filter(stringr::str_detect(league, stringr::fixed(league, ignore_case = TRUE)))
+    }
+
+    if (nrow(df) > 0) {
+      path <- df$url[1]
+      if (!startsWith(path, "https://"))
+        path <- paste0("https://www.transfermarkt.com", path)
+      return(path)
+    }
+  }
+
   links <- rvest::html_attr(rvest::html_elements(page, "a"), "href")
   path <- links[grepl("/startseite/verein/", links)][1]
   if (is.na(path)) return(NA_character_)
@@ -83,12 +114,12 @@ get_tm_team_url <- function(team) {
 if ("league_code" %in% names(teams)) {
   teams <- teams %>% mutate(
     team_url = purrr::pmap_chr(list(team, country, league_code), get_team_url),
-    tm_url = purrr::map_chr(team, get_tm_team_url)
+    tm_url = purrr::pmap_chr(list(team, country, league_code), get_tm_team_url)
   )
 } else {
   teams <- teams %>% mutate(
     team_url = purrr::map2_chr(team, country, get_team_url),
-    tm_url = purrr::map_chr(team, get_tm_team_url)
+    tm_url = purrr::map2_chr(team, country, get_tm_team_url)
   )
 }
 
