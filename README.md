@@ -23,12 +23,39 @@ install.packages(c("worldfootballR", "dplyr", "purrr", "readr"))
 ## Running the script
 
 The repository includes a script called `cwc_pull.R` that downloads the data and
-writes the results to the `data/` directory. To execute the script from the
+writes the results to the `data/out/` directory. To execute the script from the
 shell use:
 
 ```bash
 Rscript cwc_pull.R
 ```
 
-By default the generated data will be saved under `data/cwc_squads.csv`. You can
+By default the generated data will be saved under `data/out/cwc_squads.csv`. You can
 adapt the script to change file names or add further transformations as needed.
+
+## Aggiornamento automatico
+
+Per programmare l'esecuzione periodica di `cwc_pull.R` si può utilizzare
+`cron` su sistemi Linux o l'Utilità di pianificazione (Task Scheduler) su
+Windows.
+
+### Esempio con cron (Linux)
+
+Modifica il tuo file `crontab` con `crontab -e` e aggiungi una riga simile:
+
+```cron
+0 6 * * * Rscript /percorso/assoluto/cwc_pull.R
+```
+
+Questo comando avvia lo script ogni giorno alle 6:00 del mattino.
+
+### Esempio con Task Scheduler (Windows)
+
+1. Apri **Utilità di pianificazione** e crea una nuova operazione
+   pianificata.
+2. Nella sezione **Programma/script** indica il percorso di `Rscript.exe`.
+3. Nella sezione **Aggiungi argomenti** inserisci il percorso completo allo
+   script `cwc_pull.R`.
+
+I file prodotti sono in formato CSV e vengono salvati nella cartella
+`data/out/`, ad esempio `data/out/cwc_squads.csv`.
