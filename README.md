@@ -53,10 +53,12 @@ The script expects a `teams.csv` file inside the `data/` folder with at least
 the following columns:
 
 ```csv
-team,country
-Palmeiras,Brazil
-Porto,Portugal
+team,country,league_code
+Palmeiras,Brazil,Serie A Brazil
+Porto,Portugal,Primeira Liga
 ```
+
+The `league_code` value is used to build the FBref URL for each team.
 
 ## Aggiornamento automatico
 
