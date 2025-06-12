@@ -7,6 +7,19 @@ that they can be used for further analysis or simple record keeping.
 The project is based on R and mainly uses the `worldfootballR` package which
 wraps the [FBref](https://fbref.com/en/) data sources.
 
+## Project Overview
+
+The aim of this repository is to analyse teams in the FIFA Club World Cup 2025.
+Major activities and expected completion dates are:
+
+1. **Data collection** – 31 July 2024
+2. **Data cleaning** – 15 August 2024
+3. **Feature engineering** – 31 August 2024
+4. **Exploratory data analysis (EDA)** – 15 September 2024
+5. **Comparative analysis** – 15 October 2024
+6. **Final report** – 1 November 2024
+
+
 ## Dependencies
 
 - R (version 4.0 or later)
