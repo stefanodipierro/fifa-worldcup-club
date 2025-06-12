@@ -31,8 +31,25 @@ teams <- read_csv("data/teams.csv", show_col_types = FALSE)
 #' Calculate FBref team URL based on team name and optional country
 #' @param team team name as string
 #' @param country optional country filter
-get_team_url <- function(team, country = NA) {
-  urls <- worldfootballR::fb_teams_urls()
+get_team_url <- function(team, country = NA, league_code = NA) {
+  urls <- NULL
+  if (!is.na(league_code)) {
+    # obtain league URL for the specified season and league code
+    lg_url <- tryCatch(
+      worldfootballR::fb_league_urls(
+        country = league_code,
+        gender = "M",
+        season_end_year = 2025
+      ),
+      error = function(e) NULL
+    )
+    if (!is.null(lg_url) && length(lg_url) > 0) {
+      urls <- worldfootballR::fb_teams_urls(lg_url)
+    }
+  }
+  if (is.null(urls)) {
+    urls <- worldfootballR::fb_teams_urls(season_end_year = 2025)
+  }
   df <- urls %>% filter(str_detect(Squad, fixed(team, ignore_case = TRUE)))
   if (!is.na(country)) {
     df <- df %>% filter(str_detect(Country, fixed(country, ignore_case = TRUE)))
@@ -41,7 +58,11 @@ get_team_url <- function(team, country = NA) {
   df$url[1]
 }
 
-teams <- teams %>% mutate(team_url = map2_chr(team, country, get_team_url))
+if ("league_code" %in% names(teams)) {
+  teams <- teams %>% mutate(team_url = purrr::pmap_chr(list(team, country, league_code), get_team_url))
+} else {
+  teams <- teams %>% mutate(team_url = purrr::map2_chr(team, country, get_team_url))
+}
 
 results <- map(teams$team_url, function(url) {
   if (is.na(url)) return(list(matches = NULL, team_stats = NULL,
