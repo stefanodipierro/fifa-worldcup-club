@@ -7,13 +7,16 @@ required_pkgs <- c("worldfootballR", "dplyr", "purrr", "readr", "stringr", "lubr
 
 # Install or update required packages
 installed <- rownames(installed.packages())
+if (!"remotes" %in% installed) {
+  install.packages("remotes", repos = "https://cloud.r-project.org")
+}
 for (pkg in required_pkgs) {
   if (!pkg %in% installed) {
-    install.packages(pkg, repos = "https://cloud.r-project.org")
-  } else if (pkg == "worldfootballR") {
-    tryCatch({
+    if (pkg == "worldfootballR") {
+      remotes::install_github("JaseZiv/worldfootballR")
+    } else {
       install.packages(pkg, repos = "https://cloud.r-project.org")
-    }, error = function(e) message("Unable to update worldfootballR: ", e$message))
+    }
   }
 }
 

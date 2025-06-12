@@ -23,14 +23,18 @@ Major activities and expected completion dates are:
 ## Dependencies
 
 - R (version 4.0 or later)
-- [worldfootballR](https://github.com/JaseZiv/worldfootballR)
+- [worldfootballR](https://github.com/JaseZiv/worldfootballR) (GitHub version)
+  - The script installs this development version automatically using
+    `remotes::install_github`.
 - Other common packages used in the script include `dplyr`, `purrr` and
   `readr`
 
 You can install the required packages from the R console with:
 
 ```r
-install.packages(c("worldfootballR", "dplyr", "purrr", "readr"))
+install.packages("remotes")
+remotes::install_github("JaseZiv/worldfootballR")
+install.packages(c("dplyr", "purrr", "readr"))
 ```
 
 ## Running the script
