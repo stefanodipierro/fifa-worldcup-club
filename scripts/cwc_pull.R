@@ -3,7 +3,7 @@
 # downloads match results and stats for each team and saves the combined
 # data in RDS format under data/out/.
 
-required_pkgs <- c("worldfootballR", "dplyr", "purrr", "readr", "stringr", "lubridate")
+required_pkgs <- c("worldfootballR", "dplyr", "purrr", "readr", "stringr", "lubridate", "rvest")
 
 # Install or update required packages
 installed <- rownames(installed.packages())
@@ -26,6 +26,7 @@ library(purrr)
 library(readr)
 library(stringr)
 library(lubridate)
+library(rvest)
 
 message("[", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "] Starting data pull")
 
@@ -64,20 +65,45 @@ get_team_url <- function(team, country = NA, league_code = NA) {
   df$url[1]
 }
 
-if ("league_code" %in% names(teams)) {
-  teams <- teams %>% mutate(team_url = purrr::pmap_chr(list(team, country, league_code), get_team_url))
-} else {
-  teams <- teams %>% mutate(team_url = purrr::map2_chr(team, country, get_team_url))
+#' Get Transfermarkt team URL from team name by scraping the search page
+#' @param team team name as string
+get_tm_team_url <- function(team) {
+  search_url <- paste0(
+    "https://www.transfermarkt.com/schnellsuche/ergebnis/schnellsuche?query=",
+    utils::URLencode(team)
+  )
+  page <- tryCatch(rvest::read_html(search_url), error = function(e) NULL)
+  if (is.null(page)) return(NA_character_)
+  links <- rvest::html_attr(rvest::html_elements(page, "a"), "href")
+  path <- links[grepl("/startseite/verein/", links)][1]
+  if (is.na(path)) return(NA_character_)
+  paste0("https://www.transfermarkt.com", path)
 }
 
-results <- map(teams$team_url, function(url) {
-  if (is.na(url)) return(list(matches = NULL, team_stats = NULL,
-                              player_stats = NULL, injuries = NULL))
+if ("league_code" %in% names(teams)) {
+  teams <- teams %>% mutate(
+    team_url = purrr::pmap_chr(list(team, country, league_code), get_team_url),
+    tm_url = purrr::map_chr(team, get_tm_team_url)
+  )
+} else {
+  teams <- teams %>% mutate(
+    team_url = purrr::map2_chr(team, country, get_team_url),
+    tm_url = purrr::map_chr(team, get_tm_team_url)
+  )
+}
+
+results <- map(seq_len(nrow(teams)), function(i) {
+  fb_url <- teams$team_url[i]
+  tm_url <- teams$tm_url[i]
+  if (is.na(fb_url)) {
+    return(list(matches = NULL, team_stats = NULL,
+                player_stats = NULL, injuries = NULL))
+  }
   list(
-    matches = tryCatch(fb_match_results(url), error = function(e) NULL),
-    team_stats = tryCatch(fb_team_stats(url, stat_type = "standard"), error = function(e) NULL),
-    player_stats = tryCatch(fb_player_season_stats(url, stat_type = "standard"), error = function(e) NULL),
-    injuries = tryCatch(tm_team_injuries(url), error = function(e) NULL)
+    matches = tryCatch(fb_match_results(fb_url), error = function(e) NULL),
+    team_stats = tryCatch(fb_team_stats(fb_url, stat_type = "standard"), error = function(e) NULL),
+    player_stats = tryCatch(fb_player_season_stats(fb_url, stat_type = "standard"), error = function(e) NULL),
+    injuries = if (is.na(tm_url)) NULL else tryCatch(tm_team_injuries(tm_url), error = function(e) NULL)
   )
 })
 
