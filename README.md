@@ -30,10 +30,7 @@ shell use:
 Rscript scripts/cwc_pull.R
 ```
 
-By default the generated data will be saved as an RDS file named with the
-timestamp of execution, for example `data/out/20240101_120000_big_df.rds`. You
-can adapt the script to change file names or add further transformations as
-needed.
+By default the script saves an RDS file named `data/out/<timestamp>_big_df.rds`, where `<timestamp>` reflects the execution time. You can adapt the script to change file names or add further transformations as needed.
 
 The script expects a `teams.csv` file inside the `data/` folder with at least
 the following columns:
@@ -68,5 +65,4 @@ Questo comando avvia lo script ogni giorno alle 6:00 del mattino.
 3. Nella sezione **Aggiungi argomenti** inserisci il percorso completo allo
    script `cwc_pull.R`.
 
-I file prodotti sono in formato CSV e vengono salvati nella cartella
-`data/out/`, ad esempio `data/out/cwc_squads.csv`.
+I file prodotti sono in formato RDS e vengono salvati nella cartella `data/out/` con un nome come `<timestamp>_big_df.rds`.
