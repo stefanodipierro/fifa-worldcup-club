@@ -33,17 +33,20 @@ teams <- read_csv("data/teams.csv", show_col_types = FALSE)
 #' @param country optional country filter
 get_team_url <- function(team, country = NA, league_code = NA) {
   urls <- NULL
-  if (!is.na(league_code)) {
-    # obtain league URL for the specified season and league code
-    lg_url <- tryCatch(
+  if (!is.na(league_code) && !is.na(country)) {
+    # obtain league URLs for the specified season and country
+    lg_urls <- tryCatch(
       worldfootballR::fb_league_urls(
-        country = league_code,
+        country = country,
         gender = "M",
         season_end_year = 2025
       ),
       error = function(e) NULL
     )
-    if (!is.null(lg_url) && length(lg_url) > 0) {
+    if (!is.null(lg_urls) && length(lg_urls) > 0) {
+      # filter by league name if multiple leagues returned
+      lg_url <- lg_urls[stringr::str_detect(lg_urls, league_code)][1]
+      if (is.na(lg_url)) lg_url <- lg_urls[1]
       urls <- worldfootballR::fb_teams_urls(lg_url)
     }
   }
